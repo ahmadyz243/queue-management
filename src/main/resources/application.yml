@@ -1,6 +1,6 @@
 spring:
   kafka:
-    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
     consumer:
       group-id: queue-group
       auto-offset-reset: earliest
@@ -8,5 +8,8 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+  application:
+    name: queue-management
 
-#todo: add application name and port 8181
+  server:
+    port: 8181
