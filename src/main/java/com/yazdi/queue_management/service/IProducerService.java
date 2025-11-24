@@ -2,6 +2,6 @@ package com.yazdi.queue_management.service;
 
 public interface IProducerService {
 
-    void send(String message);
+    void sendToTopic(String message, String topicName);
 
 }

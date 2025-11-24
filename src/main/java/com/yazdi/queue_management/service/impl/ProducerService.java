@@ -13,8 +13,8 @@ public class ProducerService implements IProducerService {
 
 
     @Override
-    public void send(String message) {
-        kafkaTemplate.send("testTopic", message);
+    public void sendToTopic(String message, String topicName) {
+        kafkaTemplate.send(topicName, message);
     }
 
 }
