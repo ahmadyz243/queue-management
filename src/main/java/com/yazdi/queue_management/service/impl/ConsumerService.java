@@ -18,6 +18,7 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class ConsumerService implements IConsumerService {
 
+    private final Object consumerLock = new Object();
     private final KafkaConsumer<String, String> manualConsumer;
     private final KafkaListenerEndpointRegistry kafkaRegistry;
 
@@ -25,16 +26,18 @@ public class ConsumerService implements IConsumerService {
     //this reads from manual-topic. look at ConsumerConfiguration class
     @Override
     public String readOneMessage() {
-        final ConsumerRecords<String, String> records = manualConsumer.poll(Duration.ofSeconds(1));
-        if(records == null || records.isEmpty()){
-            log.error("no messages found");
-            throw new RuntimeException("no messages found");
+        synchronized(consumerLock){
+            final ConsumerRecords<String, String> records = manualConsumer.poll(Duration.ofSeconds(5));
+            if(records == null || records.isEmpty()){
+                log.error("no messages found");
+                throw new RuntimeException("no messages found");
+            }
+            final ConsumerRecord<String, String> record = records.iterator().next();
+            manualConsumer.commitSync();
+            final String message = record.value();
+            log.info("message received: {}", message);
+            return message;
         }
-        final ConsumerRecord<String, String> record = records.iterator().next();
-        manualConsumer.commitSync();
-        final String message = record.value();
-        log.info("message received: {}", message);
-        return message;
     }
 
     @KafkaListener(id = "testConsumer", topics = "testTopic", groupId = "queue-group", autoStartup = "false")
