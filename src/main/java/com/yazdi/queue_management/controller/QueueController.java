@@ -40,4 +40,14 @@ public class QueueController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/consume-one-message")
+    public ResponseEntity<?> consumeOneMessage(){
+        log.info("consume-one-message");
+        final var response = ResponseEntity.ok(
+                consumerService.readOneMessage()
+        );
+        log.info("response: {}", response);
+        return response;
+    }
+
 }

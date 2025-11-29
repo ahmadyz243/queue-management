@@ -3,22 +3,38 @@ package com.yazdi.queue_management.service.impl;
 import com.yazdi.queue_management.service.IConsumerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.listener.MessageListenerContainer;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ConsumerService implements IConsumerService {
 
+    private final KafkaConsumer<String, String> manualConsumer;
     private final KafkaListenerEndpointRegistry kafkaRegistry;
 
 
+    //this reads from manual-topic. look at ConsumerConfiguration class
     @Override
-    public String readMessage() {
-        return "todo";
+    public String readOneMessage() {
+        final ConsumerRecords<String, String> records = manualConsumer.poll(Duration.ofSeconds(1));
+        if(records == null || records.isEmpty()){
+            log.error("no messages found");
+            throw new RuntimeException("no messages found");
+        }
+        final ConsumerRecord<String, String> record = records.iterator().next();
+        manualConsumer.commitSync();
+        final String message = record.value();
+        log.info("message received: {}", message);
+        return message;
     }
 
     @KafkaListener(id = "testConsumer", topics = "testTopic", groupId = "queue-group", autoStartup = "false")
